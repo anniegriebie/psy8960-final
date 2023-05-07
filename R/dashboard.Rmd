@@ -14,7 +14,8 @@ library(ggplot2)
 ## Data Import and Cleaning
 ```{r data_import_and_cleaning, message=FALSE}
 finaldata_tbl <- readRDS("../data/finaldata_tbl.RDS")
-finalskinny_tbl <- finaldata_tbl[, c("MonthlyIncome", "Attrition", "JobSatisfaction", "Department", "EducationField", "Gender", "JobRole")]
+finalskinny_tbl <- finaldata_tbl[, c("MonthlyIncome", "Attrition", "JobSatisfaction", "Department", "EducationField", "Gender", "JobRole")] %>%
+  mutate(Attrition = as_factor(Attrition), Department=as_factor(Department), EducationField=as_factor(EducationField))
 ```
 
 ```{r output, message=FALSE}

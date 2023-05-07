@@ -7,14 +7,14 @@ library(tidyverse)
 finaldata_tbl <- readRDS("../data/finaldata_tbl.RDS")
 
 #Test of H1: "There is a relationship between monthly pay and performance rating." Use a correlation and significance test with a scatterplot and fit line
-correlation <- cor_test(
+H1_test <- cor_test(
   finaldata_tbl, 
   vars= "MonthlyIncome",
   vars2 = "PerformanceRating",
   alternative = "two.sided",
   conf.level = 0.95,
 )
-correlation
+H1_test
 
 #Test of H2: "Monthly pay differs by department" ANOVA and significance tests, with a boxplot split by department. Include traditional ANOVA summary table (component names, SS, df, MS, F, p)
 ANOVA <- anova_test(
@@ -27,8 +27,11 @@ get_anova_table (ANOVA)
 #Test of H3: "Tenure can be predicted from relationship satisfaction, and this relationship is moderated by gender." Regression and significance tests, with scatterplots and fit lines. Note that you'll need to plot predicted values (i.e. marginal effects), not raw data. Include a table of coefficients, t-tests, and p-values only (no SEs), with meaningful tables 
 ##### come back and make sure this model is correct 
 model_three <- lm(YearsAtCompany ~ RelationshipSatisfaction * Gender, data = finaldata_tbl)
-summary(model_three)
-model_three_predictive <- fitted(model_three)
+summary_model_three <- summary(model_three)
+predictive_values <- predict(model_three)
+model_three_predictive_tbl <- finaldata_tbl %>%
+  mutate(predictive_values=predictive_values)
+
 
 #Visualization
 #Scatterplot of H1
@@ -48,7 +51,8 @@ model_three_predictive <- fitted(model_three)
 ggsave(filename = "../figs/H2.png")
 
 #Scatterplot of H3
-(ggplot(finaldata_tbl, aes(x=YearsAtCompany, y=model_three_predictive, color=Gender, fill=Gender))+
+(ggplot(model_three_predictive_tbl, aes(x=RelationshipSatisfaction, y=predictive_values, group=Gender,color=Gender))+
+    geom_jitter()+
     geom_smooth(method = "lm", se =F)+
   labs(x= "Relationship Satisfaction", y = "Tenure",
        title ="Figure 3. Tenure by Relationship Satisfaction moderated by gender")
@@ -58,7 +62,7 @@ ggsave(filename = "../figs/H3.png")
 
 ##Publication
 
-# Publication Results for H1
+# Publication Results for H1 (sentence generation)
 paste0(
   "The correlation between monthly income and performance ratings was r(",
   nrow(finaldata_tbl)-2, 
@@ -104,37 +108,25 @@ paste0(
 
 #Publication Results for H2 (Table generation)
 H2_summary_table <- tibble(
-  "Component" = c("Department",
-                  "Error",
-                  "Total"),
-  "SS" = c(ANOVA$SSn,
-                       ANOVA$SSd,
-                       sum(ANOVA$SSn + ANOVA$SSd)),
-  "df" = c(ANOVA$DFn,
-           ANOVA$DFd,
-           sum(ANOVA$DFn + ANOVA$DFd)),
-  "MS" = c(ANOVA$SSn/ANOVA$DFn,
-           ANOVA$SSd/ANOVA$DFd,
-           NA),
-  "F statistic" =c(format(round(ANOVA$F, 2), nsmall = 2),
-                   NA,
-                   NA),
-  "p value" = c(str_remove(
-    format(
-      round(ANOVA$p, 2), 
-      nsmall = 2),
-    "^0"),
-    NA,
-    NA)
-)
+  "Component" = ANOVA$Effect, 
+  "SSn" = ANOVA$SSn, 
+  "SSd" = ANOVA$SSd, 
+  "DFn" = ANOVA$DFn, 
+  "DFd" = ANOVA$DFd, 
+  "F-Statistic" = ANOVA$F, 
+  "p-value" = ANOVA$p) %>%
+  mutate(across(c(6:7), ~ str_remove(format(round(., 2), nsmall = 2), "^0")))
 
 #creating CSV for H2 output table
 write_csv(H2_summary_table, "../out/H2.csv")
 
-# Publication Results for H3
+#Publication Results for H3 (Table generation)
 H3_summary_table <- tibble(
-  "Coefficients" = c("Intercept",
-                     "Relationship Satisfaction",
-                     "Gender",
-                     "Relationship Satisfaction * Gender")
-)
+  "Variable" = c("Intercept", "Relationship Satisfaction", "Gender", "Interaction:Gender*Rel. Sat."), 
+  "Estimate" = summary_model_three$coefficients[,"Estimate"],
+  "t-value" = summary_model_three$coefficients[,"t value"], 
+  "p-value"= summary_model_three$coefficients[,"Pr(>|t|)"]) %>%
+  mutate(across(c(2:4), ~ str_remove(format(round(., 2), nsmall = 2), "^0")))
+
+#creating CSV for H3 output table
+write_csv(H3_summary_table, "../out/H3.csv")

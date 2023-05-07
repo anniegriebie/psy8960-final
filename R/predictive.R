@@ -13,6 +13,8 @@ library(tidytext)
 library(wordcloud)
 library(psych)
 library(doParallel)
+library(tictoc)
+
 
 ## Data import and cleaning
 finaldata_tbl <- readRDS("../data/finaldata_tbl.RDS")
@@ -157,6 +159,7 @@ registerDoParallel(local_cluster)
 #Decided to not include "lm" model because Accuracy metric not available for regression models 
 
 #Elastic Net model with comments
+tic()
 EN_model <- train(
   Attrition ~ .,
   data = predictive_train_tbl, 
@@ -170,6 +173,9 @@ EN_model <- train(
     verboseIter = TRUE
   )
 )
+toc_EN_model<-toc()
+#holdout EN
+hoEN <-predict(EN_model, predictive_test_tbl, na.action = na.pass)
 
 #Elastic Net model without comments
 EN_model_nocomment <- train(
@@ -187,6 +193,7 @@ EN_model_nocomment <- train(
 )
 
 #Random forest model with comments
+tic()
 RF_model <- train(
   Attrition ~ .,
   data = predictive_train_tbl, 
@@ -196,6 +203,9 @@ RF_model <- train(
   preProcess=c("center", "scale", "nzv", "medianImpute"),
   trControl=trainControl(method="cv", number=10, indexOut=training_folds, verboseIter=T) 
 )
+toc_RF_model <- toc()
+#holdout RF
+hoRF <-predict(RF_model, predictive_test_tbl, na.action = na.pass)
 
 #Random forest model without comments
 RF_model_nocomment <- train(
@@ -209,6 +219,7 @@ RF_model_nocomment <- train(
 )
 
 #Extreme Gradient Boost Model with comments
+tic()
 XGBT_model <- train(
   Attrition ~ .,
   data = predictive_train_tbl, 
@@ -218,8 +229,12 @@ XGBT_model <- train(
   preProcess=c("center", "scale", "nzv", "medianImpute"),
   trControl=trainControl(method="cv", number=10, indexOut=training_folds, verboseIter=T) 
 )
+toc_XGBT_model <- toc()
+#holdout XGBT
+hoXGBT <-predict(XGBT_model, predictive_test_tbl, na.action = na.pass)
 
 #Extreme Gradient Boost Model without comments
+tic()
 XGBT_model_nocomment <- train(
   Attrition ~ .,
   data = notext_train_tbl, 
@@ -229,30 +244,63 @@ XGBT_model_nocomment <- train(
   preProcess=c("center", "scale", "nzv", "medianImpute"),
   trControl=trainControl(method="cv", number=10, indexOut=training_folds, verboseIter=T) 
 )
+toc_XGBT_model_nocomments <-toc()
+
+#holdout XGBT no comments
+hoXGBT_nocomments<-predict(XGBT_model_nocomment, notext_test_tbl, na.action=na.pass)
 
 #Stopping parallelization
 stopCluster(local_cluster) 
 registerDoSEQ()
 
+#running confusionMatrix to get holdoutaccuracy for models.
+ENholdout <- confusionMatrix(hoEN, predictive_test_tbl$Attrition)
+RFholdout <- confusionMatrix(hoRF, predictive_test_tbl$Attrition)
+XGBTholdout <- confusionMatrix(hoXGBT, predictive_test_tbl$Attrition)
+XGBTholdout_nocomments <- confusionMatrix(hoXGBT_nocomments,notext_test_tbl$Attrition )
 
+#compiling models to call in later tbl. 
 summary(resamples(list(EN_model, RF_model, XGBT_model)))
-resample_sum <- summary(resamples(list(EN_model, RF_model, XGBT_model)))
+resample_list <- summary(resamples(list(EN_model, RF_model, XGBT_model)))
 dotplot(resamples(list(EN_model, RF_model, XGBT_model)))
 
+comparison_list <-summary(resamples(list(XGBT_model, XGBT_model_nocomment)))
 
-#assessing the accuracy of each model
-resample_sum$
+## Publication
 
-# Publication
+# Publication Table contrasting information considered in deciding which model to use as final model
 Publication_tbl <-tibble(
   algo = c("glmnet", "ranger", "xgbTree"),
-  cv_rsq = str_remove(round(
-    resample_sum$statistics$Rsquared[,"Mean"],2), "^0"
-  ),
-  ho_rsq = str_remove(c(
-    format(round(hocv_cor_EN, 2), nsmall =2),
-    format(round(hocv_cor_RF,2), nsmall=2),
-    format(round(hocv_cor_XGBT, 2), nsmall=2)
+  cv_accuracy = str_remove(round(resample_list$statistics$Accuracy[,"Mean"],2),"^0"),
+  ho_accuracy= str_remove(c(
+    format(round(ENholdout$overall["Accuracy"], 2), nsmall = 2), 
+    format(round(RFholdout$overall["Accuracy"], 2), nsmall=2),
+    format(round(XGBTholdout$overall["Accuracy"], 2), nsmall=2)
+  ),"^0"),
+  run_time =c(
+    format(round(toc_EN_model$toc - toc_EN_model$tic,2),nsmall=2),
+    format(round(toc_RF_model$toc -toc_RF_model$tic,2), nsmall=2),
+    format(round(toc_XGBT_model$toc - toc_XGBT_model$tic,2), nsmall=2))
+)
+
+#creating CSV for publication output table
+write_csv(Publication_tbl, "../out/PublicationPart2.csv")
+
+#All of the models have high accuracy values. Will go with XBGTree based on values because has a tie for higest cv_accuracy with Random Forest model but has the highest holdout_accuracy. Also only a few seconds longer than the Random Forest. Elastic Net takes the longest.
+
+#Summary table comparing predictive accuracy of final model with and without text-derived predictors
+Summary_tbl <- tibble(
+  algo = c("xgbTree (Text Data)", "xgbTree (No Text Data"),
+  cv_accuracy = str_remove(round(comparison_list$statistics$Accuracy[,"Mean"],2),"^0"),
+  ho_accuracy = str_remove(c(
+    format(round(XGBTholdout$overall["Accuracy"],2), nsmall=2),
+    format(round(XGBTholdout_nocomments$overall["Accuracy"], 2), nsmall=2)
   ), "^0"),
-  cv_accuracy = str_remove(round(c(EN_model$results$Accuracy, RF_model$results$Accuracy, XGBT_model$results$Accuracy), 2), nsmall=2)
+  run_time=c(
+    format(round(toc_XGBT_model$toc - toc_XGBT_model$tic,2), nsmall=2),
+    format(round(toc_XGBT_model_nocomments$toc - toc_XGBT_model_nocomments$tic,2), nsmall=2)
   )
+)
+
+#creating CSV for summary output table
+write_csv(Summary_tbl, "../out/SummaryPart2.csv")
