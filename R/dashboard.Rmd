@@ -15,7 +15,13 @@ library(ggplot2)
 ```{r data_import_and_cleaning, message=FALSE}
 finaldata_tbl <- readRDS("../data/finaldata_tbl.RDS")
 finalskinny_tbl <- finaldata_tbl[, c("MonthlyIncome", "Attrition", "JobSatisfaction", "Department", "EducationField", "Gender", "JobRole")] %>%
-  mutate(Attrition = as_factor(Attrition), Department=as_factor(Department), EducationField=as_factor(EducationField))
+  mutate(Attrition = as_factor(Attrition), Department=as_factor(Department), EducationField=as_factor(EducationField)) %>%
+# renamed columns to be what I wanted to have as options within the shiny app so that it would be easier to call them and wouldn't have to rename within the app.
+  rename("Turnover Status" = "Attrition") %>%
+  rename("Monthly Income" = "MonthlyIncome") %>%
+  rename("Education Field" = "EducationField") %>%
+  rename("Job Role" = "JobRole") %>%
+  rename("Job Satisfaction" = "JobSatisfaction")
 ```
 
 ```{r output, message=FALSE}
