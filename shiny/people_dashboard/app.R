@@ -1,79 +1,77 @@
-library(shiny)
 library(tidyverse)
+library(shiny)
 
-
-#Do I need this one?
-selectInput("errorSelect",
-            "Display error band?",
-            c(
-              "Display Error Band"=T,
-              "Suppress Error Band"=F)
-            
-            
-# Define UI for application
 ui <- fluidPage(
-  
-  # Application title
-  titlePanel("Scatterplot Comparing Scale Means"),
-  
-  # Sidebar with a slider input for number of bins 
+  #Added Title
+  titlePanel("people_dashboard"),
   sidebarLayout(
     sidebarPanel(
-      # Drop down selectors, containing names
-      # and display options
-      selectInput("outcomeSelect",
+      # Added option to allow users to choose whether they want to examine monthly pay, turnover status, or overall job satisfactino
+      selectInput("outcome",
                   "What do you want to examine?",
-                  c("Monthly Pay", "Turnover Status", "Overall Job Satisfaction", "All"),
+                  c("Monthly Income", "Turnover Status", "Job Satisfaction"),
+                  selected = "Monthly Income"),
+      #Added option to allow users to select subset of data by department
+      selectInput("department",
+                  "Subset by department",
+                  c("Human Resources", "Research & Development", "Sales", "All"),
                   selected="All"),
-     
-      ),
-      selectInput("departmentselect",
-                  "Subset data by department",
-                  c("Sales", "Research & Development", "Human Resources", "All" ),
-                  selected= "All"
-                  ),
-      selectInput("education select",
-                  "subset data by employee field of education",
-                  c("Medical", "Life Scienes", "Technical Degree", "Human Resources", "Marketing", "Other", "All"))),
+      #Added option to allow users to select subset of data based by field of education
+      selectInput("education",
+                  "Subset by department",
+                  c("Human Resources","Life Sciences", "Marketing","Medical", "Other", "Technical Degree", "All"),
+                  selected="All"),
+      #Added option to allow users to select subset of data by employee gender
+      selectInput("gender",
+                  "Subset by employee gender",
+                  c("Male","Female","All"),
+                  selected="All"),
+      #Added option to allow users to select subset of data by job role
+      selectInput("job",
+                  "Subset by job role",
+                  c("Healthcare Representative", "Human Resources", "Laboratory Technician", "Manager", "Manufacturing Director", "Research Director", "Research Scientist", "Sales Executive", "Sales Representative","All"),
+                  selected="All")
     ),
-    
-    # Show a plot of the generated distribution
+    #selected plot to show and table for later when make the table showing means and sds of those within the output based on selection 
     mainPanel(
-      plotOutput("scatterPlot"),
+      plotOutput("plot"), 
+      tableOutput("table")
     )
   )
 )
-server <- function(input, output) {
-  week8_tbl <- readRDS("shiny_input.RDS")  
-  output$scatterPlot <- renderPlot({
-    
-    # define working tbl to iteratively modify 
-    # for later display in ggplot
-    week8_disp_tbl <- week8_tbl
-    
-    # don't need to change it if set to All; otherwise
-    # filter by gender selection
-    if (input$genderSelect != "All") {
-      week8_disp_tbl <- week8_disp_tbl %>%
-        filter(gender == input$genderSelect)
-    }
-    
-    # don't need to change it if set to not Exclude; 
-    # otherwise rmeove the cases before aug2017
-    if (input$excludeSelect == T) {
-      week8_disp_tbl <- week8_disp_tbl %>%
-        filter(after_aug2017_flag == T)
-    }
-    
-    # same plot for week8.Rmd...
-    ggplot(week8_disp_tbl,
-           aes(x = q1q6_mean, y = q8q10_mean)) +
-      geom_point() +
-      geom_smooth(method="lm", color="purple",
-                  # ...except modified by this input
-                  se=as.logical(input$errorSelect))
-  })
-}
 
-# Run the application 
+
+#Server function
+server <- function(input, output) {
+  #using readRDS to rename skinny data
+  shiny_tbl <- readRDS("shiny_input.RDS")
+   output$plot <- renderPlot({
+    shiny_tbl <- shiny_tbl
+    # Department
+    if (input$department != "All") {
+      shiny_tbl <- shiny_tbl %>%
+        filter(Department == input$department)
+    }
+    # Education Filter
+    if (input$education != "All") {
+      shiny_tbl <- shiny_tbl %>%
+        filter(`Education Field` = input$education)
+    }
+    # Gender Filter
+    if (input$gender != "All") {
+      shiny_tbl <- shiny_tbl %>%
+        filter(Gender = input$gender)
+    }
+    # Job Filter
+    if (input$job != "All") {
+      shiny_tbl <- shiny_tbl %>%
+        filter(`Job Role` = input$job)
+    }
+    shiny_tbl
+  })
+}   
+
+#Need to come back and add in output table with means and SDs later 
+
+#Run the app
 shinyApp(ui = ui, server = server)
