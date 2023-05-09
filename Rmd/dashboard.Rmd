@@ -22,6 +22,7 @@ saveRDS("../shiny/people_dashboard/shiny_input.RDS")
 ## Online Resources- Comment of link to app running on shinyapps.io
 An interactive web app for this data is available by [clicking this link](https://anniepsy8960datascience.shinyapps.io/people_dashboard/)
 
+
 ## Explanation of Approaches
 #First added selectInput option for users to select which of the variables they wanted to examine, or subset, within the histogram that would be created for visualization. For variables of a single column I created an "All" option for the default option. I chose to do these as options as selectInput options rather than using radioButtons because I thought it was more visually easy to understand having drop down options on the sidebar that then only showed what had been selected rather than having all possible options visible at once which I thought could ultimately be confusing.
 #Next I created an output for the plot, the table below the plot that would include descriptive statistics. 
