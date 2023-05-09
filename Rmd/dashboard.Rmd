@@ -11,7 +11,7 @@ library(tidyverse)
 library(ggplot2)
 ```
 
-## Data Import and Cleaning 
+## Data Import and Cleaning
 ```{r data_import_and_cleaning, message=FALSE}
 finaldata_tbl <- readRDS("../data/finaldata_tbl.RDS")
 shiny_tbl <- finaldata_tbl %>% 
@@ -19,5 +19,7 @@ select(MonthlyIncome, Attrition, JobSatisfaction, Department, EducationField, Ge
 saveRDS("../shiny/people_dashboard/shiny_input.RDS")
 ```
 
-#Include comment containing a link to app running on shinyapps.io 
-An interactive web app for this data is available by [clicking this link.](insert link here)
+## Online Resources- Comment of link to app running on shinyapps.io
+An interactive web app for this data is available by [clicking this link](https://anniepsy8960datascience.shinyapps.io/people_dashboard/)
+
+## Explanation of Approaches

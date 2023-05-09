@@ -1,0 +1,13 @@
+name: people_dashboard
+title: people_dashboard
+username:
+account: anniepsy8960datascience
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 9068854
+bundleId: 7195773
+url: https://anniepsy8960datascience.shinyapps.io/people_dashboard/
+when: 1683658541.54642
+lastSyncTime: 1683658541.54643
+asMultiple: FALSE
+asStatic: FALSE
