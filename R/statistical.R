@@ -3,10 +3,13 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 library(rstatix)
 library(tidyverse)
 
-## Data import
+## Data Import and Cleaning 
 finaldata_tbl <- readRDS("../data/finaldata_tbl.RDS")
 
-#Test of H1: "There is a relationship between monthly pay and performance rating." Use a correlation and significance test with a scatterplot and fit line
+## Analysis
+
+#Test of H1: "There is a relationship between monthly pay and performance rating." Use a correlation and significance test with a scatterplot and fit line.
+#uses rstatix to run a correlation test. Saves the result of the correlation test so that can be called in later visualization and publication section. 
 H1_test <- cor_test(
   finaldata_tbl, 
   vars= "MonthlyIncome",
@@ -17,6 +20,7 @@ H1_test <- cor_test(
 H1_test
 
 #Test of H2: "Monthly pay differs by department" ANOVA and significance tests, with a boxplot split by department. Include traditional ANOVA summary table (component names, SS, df, MS, F, p)
+#uses rstatix to run ANOVA. Saves the result of the ANOVA so that can be called in later visualization and publication section. 
 ANOVA <- anova_test(
   finaldata_tbl,
   formula = MonthlyIncome ~ Department,
@@ -24,17 +28,22 @@ ANOVA <- anova_test(
 )
 get_anova_table (ANOVA)
 
+##Should I add anything to this, like posthoc test? Come back. 
+
 #Test of H3: "Tenure can be predicted from relationship satisfaction, and this relationship is moderated by gender." Regression and significance tests, with scatterplots and fit lines. Note that you'll need to plot predicted values (i.e. marginal effects), not raw data. Include a table of coefficients, t-tests, and p-values only (no SEs), with meaningful tables 
-##### come back and make sure this model is correct 
 model_three <- lm(YearsAtCompany ~ RelationshipSatisfaction * Gender, data = finaldata_tbl)
 summary_model_three <- summary(model_three)
+#creates predictive values 
 predictive_values <- predict(model_three)
+#Adds predictive values to be called in later visualization and publication 
 model_three_predictive_tbl <- finaldata_tbl %>%
   mutate(predictive_values=predictive_values)
 
 
-#Visualization
-#Scatterplot of H1
+
+##Visualization
+
+#Scatterplot of H1 (COME BACK AND MAKE SURE CORRECT that monthly income is supposed to be X and performance rating is supposed to be Y)
 (ggplot(finaldata_tbl, aes(MonthlyIncome, PerformanceRating)) +
   geom_point( position = "jitter") +
     geom_smooth(method = "lm", se =F) +
@@ -69,19 +78,21 @@ paste0(
   ") = ",
   str_remove(
     format(
-      round(correlation$cor,2), 
+      round(H1_test$cor,2), 
       nsmall=2),
     "0"),
   ", p = ",
   str_remove(
     format(
-      round(correlation$p,2), 
+      round(H1_test$p,2), 
       nsmall=2),
     "^0"),
   ". This test was ",
-  ifelse(correlation$p > .05, "not", ""),
+  ifelse(H1_test$p > .05, "not", ""),
   " statistically significant."
 )
+
+#Come back do I need a table for H!?
 
 # Publication Results for H2 (sentence generation)
 paste0(
@@ -105,6 +116,8 @@ paste0(
   ifelse(ANOVA$p > 0.05, "not ", ""),
   "supported."
 )
+
+#Come back and fix the decimal places and zeros on this 
 
 #Publication Results for H2 (Table generation)
 H2_summary_table <- tibble(
