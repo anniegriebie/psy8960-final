@@ -1,4 +1,4 @@
 algo,cv_accuracy,ho_accuracy,run_time
-glmnet,.9,.86,42.80
-ranger,.98,.84,9.36
-xgbTree,.99,.84,11.89
+glmnet,.9,.86,42.82
+ranger,.98,.84,9.64
+xgbTree,.99,.86,13.72

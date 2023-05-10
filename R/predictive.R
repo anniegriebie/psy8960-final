@@ -46,14 +46,22 @@ cleaned_tbl <- finaldata_tbl%>%
 #writing preprocessing function 
 corpus_function <- function(corpus) {
   corpus %>%
+    #replaces abbreviations with long form
   tm_map(content_transformer(replace_abbreviation)) %>%
+    #replaces contractions with long form
   tm_map(content_transformer(replace_contraction)) %>%
-  tm_map(removeWords, "IO") %>%
+    #converts to lowercase 
   tm_map(content_transformer(str_to_lower)) %>%
   tm_map(removeWords, "[^[:alnum: ]]") %>%
+    #removes numbers
   tm_map(removeNumbers) %>%
+    #removes punctuation
   tm_map(removePunctuation) %>%
+    #removes standard english stopwords
+  tm_map(removeWords, c(stopwords("en"))) %>% 
+    #removes whitespace
   tm_map(stripWhitespace) %>%
+    #groups words to be analyzed 
   tm_map(content_transformer(lemmatize_words)) 
   }
 
@@ -67,9 +75,9 @@ negative_cleaned <- corpus_function(negative_corpus)
 
 #tokenizer
 twogram <- function(x) { NGramTokenizer(x, Weka_control(min=1, max=2)) }
-
+#for positive reviews
 positive_dtm <- DocumentTermMatrix(positive_cleaned, control=list(tokenizer=twogram))
-
+#for negative reviews
 negative_dtm <- DocumentTermMatrix(negative_cleaned, control=list(tokenizer=twogram))
 
 #turning on parallelization to make run faster
@@ -132,7 +140,6 @@ complete_predictive_tbl <- cleaned_tbl %>%
   #Could remove all variables that all have the same value (i.e. EmployeeCount is 1 for all employees and StandardHours is 80 for all employees)
   #select(-EmployeeCount, -StandardHours) but left this in for now because directions say to use all available cases and all available variables in soem way.
 
-## Analysis
 
 #removing satisfaction reviews columns for non-text models
 notext_predictive_tbl <-complete_predictive_tbl %>%
@@ -289,7 +296,7 @@ Publication_tbl <-tibble(
     format(round(toc_XGBT_model$toc - toc_XGBT_model$tic,2), nsmall=2))
 )
 
-#Question #1. Based on this table it looks like the best final model to pick is the Elastic Net model. I examined the accuracy and the time it took to run the models. Table is output as "PublicationPart2"in output folder. Based on this comparison table it appears that the Random Forest model (.98) and the XGBTree model (.99) have the highest cv accuracy, however, the Elastic Net model (.90) still has a high cv acccuracy value. The reason I chose to go with the Elastic Net model as the final model given these differences is because the Elastic Net model has the highest holdout accuracy value of the three models relating to the test data (.86) thus suggesting it is the most accurate for further test data. The Elastic Net model did take the longest time to run (42.80 seconds) compared to the other two models which was a downside, however, the time was still less than a minute with the parallel processing on thus suggesting it does not take an unreasonable amount of time. Two cited advantage of using the Elastic Net model is that it uses both the lasso and ridge penalty and is able to effectively deal with highly correlated variables, I think these features of the Elastic Net model contributed to maximizing it's performance compared to the other models. 
+#Question #1. Based on this table it looks like the best final model to pick is the Elastic Net model. I examined the accuracy and the time it took to run the models. Table is output as "PublicationPart2"in output folder. Based on this comparison table it appears that the Random Forest model (.98) and the XGBTree model (.99) have the highest cv accuracy, however, the Elastic Net model (.90) still has a high cv acccuracy value. The reason I chose to go with the Elastic Net model as the final model given these differences is because the Elastic Net model has the highest holdout accuracy value of the three models relating to the test data (.86) thus suggesting it is the most accurate for further test data. The Elastic Net model did take the longest time to run (42.82 seconds) compared to the other two models which was a downside, however, the time was still less than a minute with the parallel processing on thus suggesting it does not take an unreasonable amount of time. Two cited advantage of using the Elastic Net model is that it uses both the lasso and ridge penalty and is able to effectively deal with highly correlated variables, I think these features of the Elastic Net model contributed to maximizing it's performance compared to the other models. 
 
 #creating CSV for publication output table
 write_csv(Publication_tbl, "../out/PublicationPart2.csv")
@@ -307,8 +314,6 @@ Summary_tbl <- tibble(
     format(round(toc_EN_model_nocomments$toc - toc_EN_model_nocomments$tic,2), nsmall=2)
   )
 )
-
-#Need to come back and figure out why the tbls are showing the correct decimal points in R but not in the output 
 
 #creating CSV for summary output table
 write_csv(Summary_tbl, "../out/SummaryPart2.csv")
