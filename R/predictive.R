@@ -309,7 +309,7 @@ Summary_tbl <- tibble(
     format(round(ENholdout$overall["Accuracy"],2), nsmall=2),
     format(round(ENholdout_nocomments$overall["Accuracy"], 2), nsmall=2)
   ), "^0"),
-  run_time=c(
+  run_time =c(
     format(round(toc_EN_model$toc - toc_EN_model$tic,2), nsmall=2),
     format(round(toc_EN_model_nocomments$toc - toc_EN_model_nocomments$tic,2), nsmall=2)
   )
