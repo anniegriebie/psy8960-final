@@ -43,7 +43,7 @@ model_three_predictive_tbl <- finaldata_tbl %>%
 
 ##Visualization
 
-#Scatterplot of H1 (COME BACK AND MAKE SURE CORRECT that monthly income is supposed to be X and performance rating is supposed to be Y)
+#Scatterplot of H1 
 (ggplot(finaldata_tbl, aes(MonthlyIncome, PerformanceRating)) +
   geom_point( position = "jitter") +
     geom_smooth(method = "lm", se =F) +
@@ -51,6 +51,7 @@ model_three_predictive_tbl <- finaldata_tbl %>%
          title ="Figure 1. Relationship between Monthly pay and Performance")
     ) %>%
   ggsave(filename = "../figs/H1.png")
+#Decided to leave Monthly income on the x-axis and performance rating on the y-axis because the directions just said that there was a relationship and did not specify which was the dependent or independent variable. I think makes logical sense that an employee's income might depend on their performance rating thus suggesting that the axes should be flipped with performance rating as the variable on the x-axis typically reserved for the dependent variable, however, it also seems possible that those with higher monthly incomes tend to work harder and thus recieve higher performance ratings thus suggesting that the monthly income should remain on the x-axis. Ultimately, because the directions did not specify and just stated there was a relationship, the current display was retained. 
   
 #Boxplot of H2
 (ggplot(finaldata_tbl, aes(Department, MonthlyIncome))+
@@ -128,7 +129,7 @@ H2_summary_table <- tibble(
   "DFd" = ANOVA$DFd, 
   "F-Statistic" = ANOVA$F, 
   "p-value" = ANOVA$p) %>%
-  mutate(across(c(6:7), ~ str_remove(format(round(., 2), nsmall = 2), "^0")))
+  mutate(across(c(2:7), ~ str_remove(format(round(., 2), nsmall = 2), "^0")))
 
 #creating CSV for H2 output table
 write_csv(H2_summary_table, "../out/H2.csv")
