@@ -134,13 +134,13 @@ H2_summary_table <- tibble(
 #creating CSV for H2 output table
 write_csv(H2_summary_table, "../out/H2.csv")
 
+
 #Publication Results for H3 (Table generation)
 H3_summary_table <- tibble(
-  "Variable" = c("Intercept", "Relationship Satisfaction", "Gender", "Interaction:Gender*Rel. Sat."), 
-  "Estimate" = summary_model_three$coefficients[,"Estimate"],
-  "t-value" = summary_model_three$coefficients[,"t value"], 
-  "p-value"= summary_model_three$coefficients[,"Pr(>|t|)"]) %>%
-  mutate(across(c(2:4), ~ str_remove(format(round(., 2), nsmall = 2), "^0")))
+  'Coefficient' = c("Intercept", "Relationship Satisfaction", "Gender", "Interaction:Gender*Relationship Satisfaction"), 
+  "Estimate" = summary_model_three$coefficients[,"Estimate"], 't-value' = summary_model_three$coefficients[,"t value"],
+  'p' = summary_model_three$coefficients[,"Pr(>|t|)"]) %>%
+  mutate(across(c(2:4), ~ str_remove(format(round(., 2), nsmall = 2), "0")))
 
 #creating CSV for H3 output table
 write_csv(H3_summary_table, "../out/H3.csv")
