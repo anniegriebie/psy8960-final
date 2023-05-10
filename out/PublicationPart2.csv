@@ -1,0 +1,4 @@
+algo,cv_accuracy,ho_accuracy,run_time
+glmnet,.9,.86,42.80
+ranger,.98,.84,9.36
+xgbTree,.99,.84,11.89

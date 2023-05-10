@@ -178,6 +178,7 @@ toc_EN_model<-toc()
 hoEN <-predict(EN_model, predictive_test_tbl, na.action = na.pass)
 
 #Elastic Net model without comments
+tic()
 EN_model_nocomment <- train(
   Attrition ~ .,
   data = notext_train_tbl, 
@@ -191,6 +192,10 @@ EN_model_nocomment <- train(
     verboseIter = TRUE
   )
 )
+toc_EN_model_nocomments <-toc()
+
+#holdout EN no comments
+hoEN_nocomments<-predict(EN_model_nocomment, notext_test_tbl, na.action=na.pass)
 
 #Random forest model with comments
 tic()
@@ -217,6 +222,7 @@ RF_model_nocomment <- train(
   preProcess=c("center", "scale", "nzv", "medianImpute"),
   trControl=trainControl(method="cv", number=10, indexOut=training_folds, verboseIter=T) 
 )
+
 
 #Extreme Gradient Boost Model with comments
 tic()
@@ -257,14 +263,14 @@ registerDoSEQ()
 ENholdout <- confusionMatrix(hoEN, predictive_test_tbl$Attrition)
 RFholdout <- confusionMatrix(hoRF, predictive_test_tbl$Attrition)
 XGBTholdout <- confusionMatrix(hoXGBT, predictive_test_tbl$Attrition)
-XGBTholdout_nocomments <- confusionMatrix(hoXGBT_nocomments,notext_test_tbl$Attrition )
+ENholdout_nocomments <- confusionMatrix(hoEN_nocomments,notext_test_tbl$Attrition )
 
 #compiling models to call in later tbl. 
 summary(resamples(list(EN_model, RF_model, XGBT_model)))
 resample_list <- summary(resamples(list(EN_model, RF_model, XGBT_model)))
 dotplot(resamples(list(EN_model, RF_model, XGBT_model)))
 
-comparison_list <-summary(resamples(list(XGBT_model, XGBT_model_nocomment)))
+comparison_list <-summary(resamples(list(EN_model, EN_model_nocomment)))
 
 ## Publication
 
@@ -283,24 +289,28 @@ Publication_tbl <-tibble(
     format(round(toc_XGBT_model$toc - toc_XGBT_model$tic,2), nsmall=2))
 )
 
+#Question #1. Based on this table it looks like the best final model to pick is the Elastic Net model. I examined the accuracy and the time it took to run the models. Table is output as "PublicationPart2"in output folder. Based on this comparison table it appears that the Random Forest model (.98) and the XGBTree model (.99) have the highest cv accuracy, however, the Elastic Net model (.90) still has a high cv acccuracy value. The reason I chose to go with the Elastic Net model as the final model given these differences is because the Elastic Net model has the highest holdout accuracy value of the three models relating to the test data (.86) thus suggesting it is the most accurate for further test data. The Elastic Net model did take the longest time to run (42.80 seconds) compared to the other two models which was a downside, however, the time was still less than a minute with the parallel processing on thus suggesting it does not take an unreasonable amount of time. Two cited advantage of using the Elastic Net model is that it uses both the lasso and ridge penalty and is able to effectively deal with highly correlated variables, I think these features of the Elastic Net model contributed to maximizing it's performance compared to the other models. 
+
 #creating CSV for publication output table
 write_csv(Publication_tbl, "../out/PublicationPart2.csv")
 
-#All of the models have high accuracy values. Will go with XBGTree based on values because has a tie for higest cv_accuracy with Random Forest model but has the highest holdout_accuracy. Also only a few seconds longer than the Random Forest. Elastic Net takes the longest.
-
 #Summary table comparing predictive accuracy of final model with and without text-derived predictors
 Summary_tbl <- tibble(
-  algo = c("xgbTree (Text Data)", "xgbTree (No Text Data"),
+  algo = c("EN (Text Data)", "EN (No Text Data"),
   cv_accuracy = str_remove(round(comparison_list$statistics$Accuracy[,"Mean"],2),"^0"),
   ho_accuracy = str_remove(c(
-    format(round(XGBTholdout$overall["Accuracy"],2), nsmall=2),
-    format(round(XGBTholdout_nocomments$overall["Accuracy"], 2), nsmall=2)
+    format(round(ENholdout$overall["Accuracy"],2), nsmall=2),
+    format(round(ENholdout_nocomments$overall["Accuracy"], 2), nsmall=2)
   ), "^0"),
   run_time=c(
-    format(round(toc_XGBT_model$toc - toc_XGBT_model$tic,2), nsmall=2),
-    format(round(toc_XGBT_model_nocomments$toc - toc_XGBT_model_nocomments$tic,2), nsmall=2)
+    format(round(toc_EN_model$toc - toc_EN_model$tic,2), nsmall=2),
+    format(round(toc_EN_model_nocomments$toc - toc_EN_model_nocomments$tic,2), nsmall=2)
   )
 )
 
+#Need to come back and figure out why the tbls are showing the correct decimal points in R but not in the output 
+
 #creating CSV for summary output table
 write_csv(Summary_tbl, "../out/SummaryPart2.csv")
+
+#Question #2. Table is output as "SummaryPart2" in the out folder. Based on this table comparing the elastic net model with both text data and no text data, the results seem to suggest that removing the text data increased decreased the cv accuracy of the model but increased the holdout accuracy of the model. Additionally, removing the text data ultimately reduced the run time for the model as well. These results suggest little difference between the two models with and without text data, however, if one needed to make a decision I would suggest because the holdout accuracy value is higher (.88 for the non-text model vs. .86 for the text data model) that one should use the no-text data model. It is worth noting that the accuracy between the two models is very similar and therefore making it more difficult to make a definitive comment on the incremental predictive accuracy of including the text data within the elastic net model. 
