@@ -27,8 +27,7 @@ ANOVA <- anova_test(
   detailed = T
 )
 get_anova_table (ANOVA)
-
-##Should I add anything to this, like posthoc test? Come back. 
+#did not do a posthoc analysis because was not specified in the final directions. Additionally, the sample sizes for each department group are not equal, so considered using the "games_howell_test" from the rstatix package because rstatix documentation explains that it serves as an improved version of the Tukey-Kramer method that is applicable when group sample sizes are not equivalent but chose to not because doing so was not specified within the directions. Additionally, the rstatix documentation specifies that the Games-Howell method is best applied when the number of samples is six or more yet the department variable only has three different groups. 
 
 #Test of H3: "Tenure can be predicted from relationship satisfaction, and this relationship is moderated by gender." Regression and significance tests, with scatterplots and fit lines. Note that you'll need to plot predicted values (i.e. marginal effects), not raw data. Include a table of coefficients, t-tests, and p-values only (no SEs), with meaningful tables 
 model_three <- lm(YearsAtCompany ~ RelationshipSatisfaction * Gender, data = finaldata_tbl)
