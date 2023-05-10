@@ -64,8 +64,8 @@ ggsave(filename = "../figs/H2.png")
 (ggplot(model_three_predictive_tbl, aes(x=RelationshipSatisfaction, y=predictive_values, group=Gender,color=Gender))+
     geom_jitter()+
     geom_smooth(method = "lm", se =F)+
-  labs(x= "Relationship Satisfaction", y = "Tenure",
-       title ="Figure 3. Tenure by Relationship Satisfaction moderated by gender")
+  labs(x= "Relationship Satisfaction", y = "Predicted Tenure in Years",
+       title ="Figure 3. Tenure by Relationship Satisfaction Moderated by Employee Gender")
   )%>%
 ggsave(filename = "../figs/H3.png")
 
