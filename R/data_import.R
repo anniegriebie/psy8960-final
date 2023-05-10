@@ -16,3 +16,4 @@ finaldata_tbl <- left_join(dataset_proj, satisfaction_reviews, join_by(employee_
 
 #Saving data into data folder to be used in later files 
 saveRDS(finaldata_tbl, "../data/finaldata_tbl.RDS")
+
