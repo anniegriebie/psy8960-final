@@ -2,13 +2,17 @@
 title: "PSY 8960 final Project"
 author: "Annie Griebie"
 date: "`r Sys.Date()`"
-output: html_document
+output: 
+  html_document:
+    df_print: paged
+knit: (function(inputFile, encoding) {
+    rmarkdown::render(inputFile, encoding = encoding, output_dir = "../out/")
+  })
 ---
 ## Script Settings and Resources
 ```{r script_settings_and_resources, message=FALSE}
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 library(tidyverse)
-library(ggplot2)
 ```
 
 ## Data Import and Cleaning
@@ -18,6 +22,7 @@ shiny_tbl <- finaldata_tbl %>%
 select(MonthlyIncome, Attrition, JobSatisfaction, Department, EducationField, Gender, JobRole) %>% mutate(Attrition = case_when(Attrition == "Yes" ~ 1, Attrition == "No" ~ 0)) %>%
 saveRDS("../shiny/people_dashboard/shiny_input.RDS")
 ```
+
 
 ## Online Resources- Comment of link to app running on shinyapps.io
 An interactive web app for this data is available by [clicking this link](https://anniepsy8960datascience.shinyapps.io/people_dashboard/)
