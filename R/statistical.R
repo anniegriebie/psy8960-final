@@ -139,7 +139,8 @@ H3_summary_table <- tibble(
   "Variable" = c("Intercept", "Relationship Satisfaction", "Gender", "Interaction:Gender*Relationship Satisfaction"), 
   "Estimate" = str_remove(round(summary_model_three$coefficients[,"Estimate"],2),"0"), 
   't-value' = str_remove(round(summary_model_three$coefficients[,"t value"],2), "0"),
-  'p-value' = str_remove(round(summary_model_three$coefficients[,"Pr(>|t|)"], 2), "0")) 
+  'p-value' = str_remove(format(round(summary_model_three$coefficients[,"Pr(>|t|)"],2)), "^0+"))
+#wrapping in p-value input in format keeps the trailing zeros while still removing the leading zeros. If do not include "format" then will remove the 0.00 p-value completely leaving a blank cell. 
 
 #creating CSV for H3 output table
 write_csv(H3_summary_table, "../out/H3.csv")
