@@ -73,7 +73,7 @@ negative_corpus <- VCorpus(VectorSource(cleaned_tbl$bad))
 positive_cleaned <- corpus_function(positive_corpus)
 negative_cleaned <- corpus_function(negative_corpus)
 
-#tokenizer
+#bigram tokenizer, chose to not do a remove sparse terms command because would result in zero entry warning  
 twogram <- function(x) { NGramTokenizer(x, Weka_control(min=1, max=2)) }
 #for positive reviews
 positive_dtm <- DocumentTermMatrix(positive_cleaned, control=list(tokenizer=twogram))
@@ -84,7 +84,7 @@ negative_dtm <- DocumentTermMatrix(negative_cleaned, control=list(tokenizer=twog
 local_cluster = makeCluster(7)   
 registerDoParallel(local_cluster)
 
-#LDA model for topics within good reviews, not including "Griffiths 2004" because does not run on my Mac
+#LDA model for topics within good reviews, not including "Griffiths 2004" because does not run on my Mac. I chose to do topic modeling in order to organize the data because the number of reviews are large and I thought this would help focus the relevant material 
 tuning_good <- FindTopicsNumber(
   positive_dtm,
   topics = seq(2,10,1),
@@ -95,6 +95,7 @@ tuning_good <- FindTopicsNumber(
 )
 FindTopicsNumber_plot(tuning_good)
 
+#LDA model for topics within good reviews, not including "Griffiths 2004" because does not run on my Mac. I chose to do topic modeling in order to organize the data because the number of reviews are large and I thought this would help focus the relevant material 
 tuning_bad <- FindTopicsNumber(
   negative_dtm,
   topics = seq(2,10,1),
@@ -138,7 +139,7 @@ complete_predictive_tbl <- cleaned_tbl %>%
   #removing unnecessary/duplicated columns
   select(-document.x, -document.y, -good, -bad, -topic.x, -topic.y, -gamma.x, -gamma.y)
   #Could remove all variables that all have the same value (i.e. EmployeeCount is 1 for all employees and StandardHours is 80 for all employees)
-  #select(-EmployeeCount, -StandardHours) but left this in for now because directions say to use all available cases and all available variables in soem way.
+  #select(-EmployeeCount, -StandardHours) but left this in for now because directions say to use all available cases and all available variables in some way.
 
 
 #removing satisfaction reviews columns for non-text models
