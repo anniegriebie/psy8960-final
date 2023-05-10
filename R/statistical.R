@@ -40,7 +40,6 @@ model_three_predictive_tbl <- finaldata_tbl %>%
   mutate(predictive_values=predictive_values)
 
 
-
 ##Visualization
 
 #Scatterplot of H1 
@@ -93,32 +92,6 @@ paste0(
   " statistically significant."
 )
 
-#Come back do I need a table for H!?
-
-# Publication Results for H2 (sentence generation)
-paste0(
-  "The ANOVA test indicated that there was ",
-  ifelse(ANOVA$p > 0.05, "not ", ""),
-  "a statistically significant difference in monthly income among different departments (",
-  "F(", 
-  ANOVA$DFn, 
-  ", ",
-  ANOVA$DFd,
-  ") = ",
-  format(round(ANOVA$F, 2), nsmall = 2),
-  ", p = ",
-  str_remove(
-    format(
-      round(ANOVA$p, 2), 
-      nsmall = 2),
-    "^0"),
-  ").",
-  "Therefore, hypothesis 2 was ",
-  ifelse(ANOVA$p > 0.05, "not ", ""),
-  "supported."
-)
-
-#Come back and fix the decimal places and zeros on this 
 
 #Publication Results for H2 (Table generation)
 H2_summary_table <- tibble(
@@ -133,6 +106,17 @@ H2_summary_table <- tibble(
 #creating CSV for H2 output table
 write_csv(H2_summary_table, "../out/H2.csv")
 
+# Publication Results for H2 (sentence generation)
+paste0(
+  "The results of the ANOVA shows a",
+  ifelse(ANOVA$p > 0.05, "not ", ""),
+  "statistically significant difference in monthly income across different departments (",
+  "F(", ANOVA$DFn, ", ",
+  ANOVA$DFd, ") = ", format(round(ANOVA$F, 2), nsmall = 2),
+  ", p = ",str_remove(format(round(ANOVA$p, 2),nsmall = 2),"^0"), ").",
+  "Therefore, hypothesis 2, that monthly pay differs by department, was ",
+  ifelse(ANOVA$p > 0.05, "not ", ""),
+  "supported.")
 
 #Publication Results for H3 (Table generation)
 H3_summary_table <- tibble(
@@ -144,3 +128,30 @@ H3_summary_table <- tibble(
 
 #creating CSV for H3 output table
 write_csv(H3_summary_table, "../out/H3.csv")
+
+# Publication Results for H3 (sentence generation)
+#ended up making a sentence for each row of the regression table to interpret and tried to make into a paragraph. Final directions stated it was ok to have explanation in plain text so because of the length and complexity of this model I decided to not try to dynmically generate "not significant" vs. "significant" for each of the variables and instead only dynamically generated the numbers. 
+paste0(
+  "Simple linear regression was used to test if tenure could be predicted from relationship satisfaction with the relationship moderated by employee gender, the results shows a significant effect for the intercept (",
+  "t(", (nrow(finaldata_tbl)-4), " ",
+   ") = ",(H3_summary_table$`t-value`[1]),
+  ", p = ",(H3_summary_table$`p-value`[1]), ").",
+  " ",
+  "Additionally, the results show a non-significant effect for Relationship Satisfaction (",
+  "t(", (nrow(finaldata_tbl)-4), " ",
+  ") = ",(H3_summary_table$`t-value`[2]),
+  ", p = ",(H3_summary_table$`p-value`[2]), ").",
+  " ",
+  "Additionally, the results show a non-significant effect for gender (",
+  "t(", (nrow(finaldata_tbl)-4), " ",
+  ") = ",(H3_summary_table$`t-value`[3]),
+  ", p = ",(H3_summary_table$`p-value`[3]), ").",
+  " ",
+  "Additionally the results show a non-significant effect for the interaction between Relationship Satisfaction and Gender  (",
+  "t(", (nrow(finaldata_tbl)-4), " ",
+  ") = ",(H3_summary_table$`t-value`[4]),
+  ", p = ",(H3_summary_table$`p-value`[4]), ").",
+  "",
+  "Therefore, hypothesis 3, that the relationship between relationship satisfaction and tenure is moderated by gender is not supported at an alpha value of .05")
+
+
