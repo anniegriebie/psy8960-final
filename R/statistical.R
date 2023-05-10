@@ -123,13 +123,12 @@ paste0(
 #Publication Results for H2 (Table generation)
 H2_summary_table <- tibble(
   "Component" = ANOVA$Effect, 
-  "SSn" = ANOVA$SSn, 
-  "SSd" = ANOVA$SSd, 
-  "DFn" = ANOVA$DFn, 
-  "DFd" = ANOVA$DFd, 
-  "F-Statistic" = ANOVA$F, 
-  "p-value" = ANOVA$p) %>%
-  mutate(across(c(2:7), ~ str_remove(format(round(., 2), nsmall = 2), "^0")))
+  "SSn" = str_remove(round(ANOVA$SSn,2),"^0"), 
+  "SSd" = str_remove(round(ANOVA$SSd,2), "^0"), 
+  "DFn" = str_remove(round(ANOVA$DFn, 2), "^0"), 
+  "DFd" = str_remove(round(ANOVA$DFd,2), "^0"), 
+  "F-Statistic" = str_remove(round(ANOVA$F,2), "^0"), 
+  "p-value" = str_remove(round(ANOVA$p, 2), "^0")) 
 
 #creating CSV for H2 output table
 write_csv(H2_summary_table, "../out/H2.csv")
@@ -137,10 +136,10 @@ write_csv(H2_summary_table, "../out/H2.csv")
 
 #Publication Results for H3 (Table generation)
 H3_summary_table <- tibble(
-  'Coefficient' = c("Intercept", "Relationship Satisfaction", "Gender", "Interaction:Gender*Relationship Satisfaction"), 
-  "Estimate" = summary_model_three$coefficients[,"Estimate"], 't-value' = summary_model_three$coefficients[,"t value"],
-  'p' = summary_model_three$coefficients[,"Pr(>|t|)"]) %>%
-  mutate(across(c(2:4), ~ str_remove(format(round(., 2), nsmall = 2), "0")))
+  "Variable" = c("Intercept", "Relationship Satisfaction", "Gender", "Interaction:Gender*Relationship Satisfaction"), 
+  "Estimate" = str_remove(round(summary_model_three$coefficients[,"Estimate"],2),"0"), 
+  't-value' = str_remove(round(summary_model_three$coefficients[,"t value"],2), "0"),
+  'p-value' = str_remove(round(summary_model_three$coefficients[,"Pr(>|t|)"], 2), "0")) 
 
 #creating CSV for H3 output table
 write_csv(H3_summary_table, "../out/H3.csv")

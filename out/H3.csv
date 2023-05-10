@@ -1,5 +1,5 @@
-Coefficient,Estimate,t-value,p
-Intercept, 6.24, 9.28,.00
-Relationship Satisfaction, .37, 1.58,.11
-Gender, .78, .88,.38
+Variable,Estimate,t-value,p-value
+Intercept,6.24,9.28,
+Relationship Satisfaction,.37,1.58,.11
+Gender,.78,.88,.38
 Interaction:Gender*Relationship Satisfaction,-.43,-1.42,.16
