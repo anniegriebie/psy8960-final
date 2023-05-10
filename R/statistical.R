@@ -46,7 +46,7 @@ model_three_predictive_tbl <- finaldata_tbl %>%
   geom_point( position = "jitter") +
     geom_smooth(method = "lm", se =F) +
     labs(x = "Monthly Income in Dollars", y = "Performance Rating",
-         title ="Figure 1. Relationship between Monthly pay and Performance")
+         title ="Figure 1. Relationship between Monthly Pay and Performance")
     ) %>%
   ggsave(filename = "../figs/H1.png")
 #Decided to leave Monthly income on the x-axis and performance rating on the y-axis because the directions just said that there was a relationship and did not specify which was the dependent or independent variable. I think makes logical sense that an employee's income might depend on their performance rating thus suggesting that the axes should be flipped with performance rating as the variable on the x-axis typically reserved for the dependent variable, however, it also seems possible that those with higher monthly incomes tend to work harder and thus recieve higher performance ratings thus suggesting that the monthly income should remain on the x-axis. Ultimately, because the directions did not specify and just stated there was a relationship, the current display was retained. 
