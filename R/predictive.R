@@ -285,7 +285,7 @@ comparison_list <-summary(resamples(list(EN_model, EN_model_nocomment)))
 # Publication Table contrasting information considered in deciding which model to use as final model
 Publication_tbl <-tibble(
   algo = c("glmnet", "ranger", "xgbTree"),
-  cv_accuracy = str_remove(round(resample_list$statistics$Accuracy[,"Mean"],2),"^0"),
+  cv_accuracy = str_remove(format(round(resample_list$statistics$Accuracy[,"Mean"],2), nsmall=2),"^0"),
   ho_accuracy= str_remove(c(
     format(round(ENholdout$overall["Accuracy"], 2), nsmall = 2), 
     format(round(RFholdout$overall["Accuracy"], 2), nsmall=2),
@@ -297,7 +297,7 @@ Publication_tbl <-tibble(
     format(round(toc_XGBT_model$toc - toc_XGBT_model$tic,2), nsmall=2))
 )
 
-#Question #1. Based on this table it looks like the best final model to pick is the Elastic Net model. I examined the accuracy and the time it took to run the models. Table is output as "PublicationPart2"in output folder. Based on this comparison table it appears that the Random Forest model (.98) and the XGBTree model (.99) have the highest cv accuracy, however, the Elastic Net model (.90) still has a high cv acccuracy value. The reason I chose to go with the Elastic Net model as the final model given these differences is because the Elastic Net model has the highest holdout accuracy value of the three models relating to the test data (.86) thus suggesting it is the most accurate for further test data. The Elastic Net model did take the longest time to run (42.82 seconds) compared to the other two models which was a downside, however, the time was still less than a minute with the parallel processing on thus suggesting it does not take an unreasonable amount of time. Two cited advantage of using the Elastic Net model is that it uses both the lasso and ridge penalty and is able to effectively deal with highly correlated variables, I think these features of the Elastic Net model contributed to maximizing it's performance compared to the other models. 
+#Question #1. Based on this table it looks like the best final model to pick is the Elastic Net model. I examined the accuracy and the time it took to run the models. Table is output as "PublicationPart2"in output folder. Based on this comparison table it appears that the Random Forest model (.98) and the XGBTree model (.99) have the highest cv accuracy, however, the Elastic Net model (.90) still has a high cv acccuracy value. The reason I chose to go with the Elastic Net model as the final model given these differences is because the Elastic Net model has the highest holdout accuracy value of the three models relating to the test data (.86) thus suggesting it is the most accurate for further test data. The Elastic Net model did take the longest time to run (41.24 seconds) compared to the other two models which was a downside, however, the time was still less than a minute with the parallel processing on thus suggesting it does not take an unreasonable amount of time. Two cited advantage of using the Elastic Net model is that it uses both the lasso and ridge penalty and is able to effectively deal with highly correlated variables, I think these features of the Elastic Net model contributed to maximizing it's performance compared to the other models. 
 
 #creating CSV for publication output table
 write_csv(Publication_tbl, "../out/PublicationPart2.csv")
@@ -305,7 +305,7 @@ write_csv(Publication_tbl, "../out/PublicationPart2.csv")
 #Summary table comparing predictive accuracy of final model with and without text-derived predictors
 Summary_tbl <- tibble(
   algo = c("EN (Text Data)", "EN (No Text Data"),
-  cv_accuracy = str_remove(round(comparison_list$statistics$Accuracy[,"Mean"],2),"^0"),
+  cv_accuracy = str_remove(format(round(comparison_list$statistics$Accuracy[,"Mean"],2), nsmall=2),"^0"),
   ho_accuracy = str_remove(c(
     format(round(ENholdout$overall["Accuracy"],2), nsmall=2),
     format(round(ENholdout_nocomments$overall["Accuracy"], 2), nsmall=2)
